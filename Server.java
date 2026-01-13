@@ -128,3 +128,14 @@ public class Server {
         System.out.println("/menu        ➜ Mở menu");
         System.out.println("=================================================");
     }
+}
+    public void broadcastMessage(String message, String senderUsername) {
+        saveMessageToHistory(message);
+        System.out.println("[BROADCAST] " + message);
+        for (ClientHandler client : clients.values()) {
+            String currentUsername = client.getUsername();
+            if (currentUsername == null) continue;
+            if (senderUsername == null || !currentUsername.equals(senderUsername))
+                client.sendMessage(message);
+        }
+    }
