@@ -40,3 +40,21 @@ public class Server {
             e.printStackTrace();
         }
     }
+    private void handleServerCommands() {
+        Scanner sc = new Scanner(System.in);
+        String mode = null;
+        String targetUser = null;
+        while (true) {
+            if (mode == null) System.out.print("SERVER> ");
+            String line = sc.nextLine().trim();
+            // ... (logic xử lý command exit, menu, mode)
+        }
+    }
+
+    private void printMenu() {
+        System.out.println("\n================== SERVER MENU ==================");
+        System.out.println("/online      ➜ Xem danh sách clients online (tên + IP)");
+        System.out.println("/msg <user>  ➜ Chat riêng liên tục với client");
+        System.out.println("/broadcast   ➜ Gửi broadcast tới tất cả client");
+        // ...
+    }
