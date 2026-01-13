@@ -129,6 +129,24 @@ public class Server {
         System.out.println("=================================================");
     }
 }
+    // ===== QUẢN LÝ CLIENT =====
+    public boolean registerClient(String username, ClientHandler handler) {
+        Socket sock = handler.getSocket();
+        String ip = (sock != null && sock.getRemoteSocketAddress() != null)
+                ? sock.getRemoteSocketAddress().toString()
+                : "Unknown";
+
+        synchronized (clients) {
+            if (clients.containsKey(username)) return false;
+            clients.put(username, handler);
+            onlineInfo.put(username, ip);
+        }
+
+        broadcastMessage("📢 " + username + " đã tham gia phòng.", null);
+        return true;
+    }
+
+// ===== CHAT =====
     public void broadcastMessage(String message, String senderUsername) {
         saveMessageToHistory(message);
         System.out.println("[BROADCAST] " + message);
@@ -137,5 +155,27 @@ public class Server {
             if (currentUsername == null) continue;
             if (senderUsername == null || !currentUsername.equals(senderUsername))
                 client.sendMessage(message);
+        }
+    }
+    public void listClients(Object outObj) {
+        if (clients.isEmpty()) {
+            if (outObj instanceof PrintWriter) ((PrintWriter) outObj).println("[SERVER] Chưa có client nào online.");
+            else System.out.println("Chưa có client nào online.");
+            return;
+        }
+
+        if (outObj instanceof PrintWriter) {
+            PrintWriter out = (PrintWriter) outObj;
+            out.println("=== Clients online ===");
+            for (String username : clients.keySet()) {
+                String ip = onlineInfo.getOrDefault(username, "Unknown");
+                out.println(" - " + username + " | IP: " + ip);
+            }
+        } else {
+            System.out.println("=== Clients online ===");
+            for (String username : clients.keySet()) {
+                String ip = onlineInfo.getOrDefault(username, "Unknown");
+                System.out.println(" - " + username + " | IP: " + ip);
+            }
         }
     }
