@@ -128,7 +128,7 @@ public class Server {
         System.out.println("/menu        ➜ Mở menu");
         System.out.println("=================================================");
     }
-}
+
     // ===== QUẢN LÝ CLIENT =====
     public boolean registerClient(String username, ClientHandler handler) {
         Socket sock = handler.getSocket();
@@ -146,7 +146,25 @@ public class Server {
         return true;
     }
 
-// ===== CHAT =====
+    public void removeClient(String username) {
+        if (username == null) return;
+        clients.remove(username);
+        onlineInfo.remove(username);
+        broadcastMessage("📢 " + username + " đã rời phòng.", null);
+    }
+
+    public void kickUser(String username) {
+        ClientHandler client = clients.get(username);
+        if (client != null) {
+            client.sendMessage("[SERVER_KICK]");
+            client.kick();
+            System.out.println("Client " + username + " đã bị kick!");
+        } else {
+            System.out.println("Không tìm thấy client: " + username);
+        }
+    }
+
+    // ===== CHAT =====
     public void broadcastMessage(String message, String senderUsername) {
         saveMessageToHistory(message);
         System.out.println("[BROADCAST] " + message);
@@ -157,6 +175,33 @@ public class Server {
                 client.sendMessage(message);
         }
     }
+
+    public void sendPrivateMessage(String fromUser, String toUser, String message) {
+        ClientHandler receiver = clients.get(toUser);
+        if (receiver != null) {
+            receiver.sendMessage("[" + fromUser + "]: " + message);
+            System.out.println("[PRIVATE][" + fromUser + " -> " + toUser + "]: " + message);
+        }
+    }
+
+    public User getUser(String username) {
+        ClientHandler handler = clients.get(username);
+        return handler != null ? handler.user : null;
+    }
+
+    // Dành cho **client**: chỉ in tên
+    public void listClientNames(PrintWriter out) {
+        if (clients.isEmpty()) {
+            out.println("[SERVER] Chưa có client nào online.");
+            return;
+        }
+        out.println("=== Clients online ===");
+        for (String username : clients.keySet()) {
+            out.println(" - " + username);
+        }
+    }
+
+    // Dành cho **server console**: tên + IP
     public void listClients(Object outObj) {
         if (clients.isEmpty()) {
             if (outObj instanceof PrintWriter) ((PrintWriter) outObj).println("[SERVER] Chưa có client nào online.");
@@ -179,57 +224,9 @@ public class Server {
             }
         }
     }
-    // ===== PHẦN CÒN THIẾU CHO KIỆT HOÀN THIỆN =====
-
-    public void removeClient(String username) {
-        if (username == null) return;
-        clients.remove(username); // Xóa khỏi map quản lý handler
-        onlineInfo.remove(username); // Xóa khỏi map quản lý IP
-        broadcastMessage("📢 " + username + " đã rời phòng.", null);
-    }
-
-    public void kickUser(String username) {
-        ClientHandler client = clients.get(username);
-        if (client != null) {
-            // Gửi lệnh đặc biệt để phía Client nhận biết bị kick
-            client.sendMessage("[SERVER_KICK]");
-            client.kick(); // Đóng kết nối của client đó
-            System.out.println("Client " + username + " đã bị kick!");
-        } else {
-            System.out.println("Không tìm thấy client: " + username);
-        }
-    }
-
-    // Gửi tin nhắn riêng từ Server tới một Client
-    public void sendPrivateMessage(String fromUser, String toUser, String message) {
-        ClientHandler receiver = clients.get(toUser);
-        if (receiver != null) {
-            receiver.sendMessage("[" + fromUser + "]: " + message);
-            System.out.println("[PRIVATE][" + fromUser + " -> " + toUser + "]: " + message);
-        }
-    }
-
-    // Lấy thông tin đối tượng User của một client
-    public User getUser(String username) {
-        ClientHandler handler = clients.get(username);
-        return handler != null ? handler.user : null;
-    }
-
-    // Chỉ liệt kê tên (dành cho yêu cầu từ phía Client)
-    public void listClientNames(PrintWriter out) {
-        if (clients.isEmpty()) {
-            out.println("[SERVER] Chưa có client nào online.");
-            return;
-        }
-        out.println("=== Clients online ===");
-        for (String username : clients.keySet()) {
-            out.println(" - " + username);
-        }
-    }
 
     private void saveMessageToHistory(String message) {
         chatHistory.add(message);
-        // Lưu vào file text để xem lại sau này
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("chat_history.txt", true)))) {
             out.println(message);
         } catch (IOException e) {
@@ -241,7 +238,6 @@ public class Server {
         return chatHistory;
     }
 
-    // Nhận tin nhắn riêng mà Client gửi đích danh cho Server
     public void receiveFromClient(String fromUser, String message) {
         String formatted = "[CLIENT->SERVER][" + fromUser + "]: " + message;
         System.out.println(formatted);
