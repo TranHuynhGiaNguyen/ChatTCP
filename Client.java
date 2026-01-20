@@ -1,12 +1,10 @@
 package chattcp;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
-
 public class Client {
     private final String SERVER_IP = "localhost";
     private final int SERVER_PORT = 1436;

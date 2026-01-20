@@ -1,10 +1,5 @@
-// ============================================================
-// PART 1 of 3: ClientGUI - IMPORTS, VARIABLES, UI SETUP
-// Copy toàn bộ nội dung này vào ClientGUI.java
-// ============================================================
 
 package chattcp;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
@@ -255,7 +250,7 @@ public class ClientGUI extends JFrame {
         backBtn = new JButton("Back");
         toServerBtn = new JButton("Chat với server");
         historyBtn = new JButton("Lịch sử chat");
-        darkModeBtn = new JButton("🌙 Dark");
+        darkModeBtn = new JButton(" Dark");
         helpBtn = new JButton("Trợ giúp");
         exitBtn = new JButton("Đăng xuất");
 
