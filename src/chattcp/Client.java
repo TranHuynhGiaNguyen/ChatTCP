@@ -52,6 +52,23 @@ public class Client {
                 }
             });
 
+            readThread.setDaemon(true);
+            readThread.start();
+
+            // --- Luồng gửi tin nhắn (Main Thread) ---
+            while (true) {
+                String line = sc.nextLine();
+
+                if (line.equalsIgnoreCase("/exit")) {
+                    isClosing = true; // Đánh dấu đang thoát chủ động
+                    writer.println(line); // Báo cho server biết
+                    closeClient();
+                    break;
+                }
+
+                writer.println(line);
+            }
+
         } catch (IOException e) {
             System.err.println("Lỗi kết nối: " + e.getMessage());
         }
